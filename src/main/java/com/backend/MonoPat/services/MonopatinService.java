@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -75,31 +76,42 @@ public class MonopatinService implements IMonopatinService{
 
 //N8N
 
-@Override
-public List<Monopatin> encontrarCercanos(UbicacionRequestDTO ubicacion) {
-    // 1. Definimos un radio de búsqueda en kilómetros (ej: 1 km)
-    final double RADIO_DE_BUSQUEDA_KM = 1.0;
+    @Override
+    public List<Monopatin> encontrarCercanos(UbicacionRequestDTO ubicacion) {
+        // 1. Definimos un radio de búsqueda
+        final double RADIO_DE_BUSQUEDA_KM = 1.0;
 
-    // 2. Obtenemos TODOS los monopatines que estén disponibles.
-    // No es eficiente para miles de monopatines, pero es perfecto para empezar.
-    List<Monopatin> todosLosDisponibles = monopatinRepository.findByEstado("disponible");
-    List<Monopatin> monopatinesCercanos = new ArrayList<>();
+        // 2. Obtenemos TODOS los monopatines que estén disponibles.
+        List<Monopatin> todosLosDisponibles = monopatinRepository.findByEstado("disponible");
+        List<Monopatin> monopatinesCercanos = new ArrayList<>();
 
-    // 3. Recorremos cada monopatín y calculamos la distancia
-    for (Monopatin monopatin : todosLosDisponibles) {
-        double distancia = GeoUtils.calcularDistancia(
-                ubicacion.getLatitud(),
-                ubicacion.getLongitud(),
-                monopatin.getLatitud(),
-                monopatin.getLongitud()
-        );
+        // 3. Recorremos y filtramos los que están dentro del radio
+        for (Monopatin monopatin : todosLosDisponibles) {
+            double distancia = GeoUtils.calcularDistancia(
+                    ubicacion.getLatitud(),
+                    ubicacion.getLongitud(),
+                    monopatin.getLatitud(),
+                    monopatin.getLongitud()
+            );
 
-        // 4. Si la distancia es menor al radio, lo añadimos a la lista de resultados
-        if (distancia <= RADIO_DE_BUSQUEDA_KM) {
-            monopatinesCercanos.add(monopatin);
+            if (distancia <= RADIO_DE_BUSQUEDA_KM) {
+                monopatinesCercanos.add(monopatin);
+            }
         }
-    }
 
-    return monopatinesCercanos;
-}
+        // --- ¡AQUÍ ESTÁ LA NUEVA LÓGICA! ---
+        // 4. Ordenamos la lista de resultados por distancia (de menor a mayor)
+        monopatinesCercanos.sort(Comparator.comparingDouble(m ->
+                GeoUtils.calcularDistancia(
+                        ubicacion.getLatitud(),
+                        ubicacion.getLongitud(),
+                        m.getLatitud(),
+                        m.getLongitud()
+                )
+        ));
+        // --- FIN DE LA NUEVA LÓGICA ---
+
+        // 5. Devolvemos la lista, ahora ordenada por cercanía.
+        return monopatinesCercanos;
+    }
 }
