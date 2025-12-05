@@ -6,7 +6,7 @@ FROM maven:3.9-eclipse-temurin-21-alpine AS build
 COPY . .
 
 # Compilamos el proyecto y generamos el .jar
-RUN mvn clean package -DskipTests
+RUN mvn clean package -Dmaven.test.skip=true
 
 # --- Etapa 2: Ejecucion (Run) ---
 # Usamos Eclipse Temurin Alpine (muy ligera y compatible)
