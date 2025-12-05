@@ -33,7 +33,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         // 4. Define los orígenes permitidos (¡IMPORTANTE!)
         // Aquí debes poner la URL de tu frontend. Si usas Live Server en VSCode, suele ser 5500.
-        configuration.setAllowedOrigins(Arrays.asList("http://127.0.0.1:5500", "http://localhost:5500"));
+        configuration.setAllowedOrigins(Arrays.asList("*"));
 
         // 5. Define los métodos HTTP permitidos (GET, POST, etc.)
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
